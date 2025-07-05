@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>数据展示</title>
+    <style>
+        body {
+            background-color: #6BADE4; /* 稍微加深的蓝色 */
+            color: #000000; /* 文字设为黑色 */
+            margin: 0;
+            padding: 10px;
+        }
+        .header {
+            text-align: right;
+            font-size: 0.9em;
+            padding: 5px;
+            color: #000000; /* 确保日期和温度文字可见 */
+        }
+        table { 
+            border-collapse: collapse; 
+            width: 90%;
+            margin: 20px auto; /* 居中表格 */
+            background-color: #E6F3FA; /* 保持表格浅蓝色背景 */
+            color: #000000; /* 表格内文字设为黑色 */
+            border: 2px solid #000000; /* 外边框保持黑色 */
+        }
+        th {
+            background-color: #3CB371; /* 绿色表头 */
+            color: #ffffff; /* 表头文字白色 */
+            border: 1px solid #000000; /* 表头边框保持黑色 */
+            padding: 8px;
+            text-align: left;
+        }
+        td {
+            background-color: #98FB98; /* 浅绿色单元格 */
+            border: 1px solid #000000; /* 单元格边框保持黑色 */
+            padding: 8px;
+            text-align: left;
+        }
+        .cn-note { 
+            font-size: 0.8em; 
+            color: #666; 
+        }
+        td.highlight {
+            background-color: #90EE90; /* 高亮浅绿色 */
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        日期: {{ date }}<br>
+        温度: {{ latest_temp }}°C
+    </div>
+    <h2 style="text-align: center;">Data from dat_heatsourceoutletdata (热源出口数据)</h2>
+    <table>
+        <tr>
+            <th>HeatSourceExportId<br><span class="cn-note">(热源出口ID)</span></th>
+            <th>GetTime<br><span class="cn-note">(获取时间)</span></th>
+            <th>CumulativeFlow<br><span class="cn-note">(累计流量)</span></th>
+            <th>InstantaneousFlow<br><span class="cn-note">(瞬时流量)</span></th>
+            <th>CumulativeHeat<br><span class="cn-note">(累计热量)</span></th>
+            <th>InstantaneousHeat<br><span class="cn-note">(瞬时热量)</span></th>
+            <th>SupplyTemp<br><span class="cn-note">(供水温度)</span></th>
+            <th>BackTemp<br><span class="cn-note">(回水温度)</span></th>
+            <th>SupplyPre<br><span class="cn-note">(供水压力)</span></th>
+        </tr>
+        {% for row in data %}
+        <tr>
+            <td>{{ row[0] }}</td>
+            <td>{{ row[1] }}</td>
+            <td>{{ row[2] }}</td>
+            <td>{{ row[3] }}</td>
+            <td>{{ row[4] }}</td>
+            <td>{{ row[5] }}</td>
+            <td>{{ row[6] }}</td>
+            <td>{{ row[7] }}</td>
+            <td>{{ row[8] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
