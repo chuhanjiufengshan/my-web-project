@@ -4,8 +4,8 @@
     <title>数据展示</title>
     <style>
         body {
-            background-color: #6BADE4; /* 稍微加深的蓝色 */
-            color: #000000; /* 文字设为黑色 */
+            background-color: #76C1E6;
+            color: #000000;
             margin: 0;
             padding: 10px;
         }
@@ -13,26 +13,26 @@
             text-align: right;
             font-size: 0.9em;
             padding: 5px;
-            color: #000000; /* 确保日期和温度文字可见 */
+            color: #000000;
         }
         table { 
             border-collapse: collapse; 
             width: 90%;
-            margin: 20px auto; /* 居中表格 */
-            background-color: #E6F3FA; /* 保持表格浅蓝色背景 */
-            color: #000000; /* 表格内文字设为黑色 */
-            border: 2px solid #000000; /* 外边框保持黑色 */
+            margin: 20px auto;
+            background-color: #E6F3FA;
+            color: #000000;
+            border: 2px solid #000000;
         }
         th {
-            background-color: #3CB371; /* 绿色表头 */
-            color: #ffffff; /* 表头文字白色 */
-            border: 1px solid #000000; /* 表头边框保持黑色 */
+            background-color: #3CB371;
+            color: #ffffff;
+            border: 1px solid #000000;
             padding: 8px;
             text-align: left;
         }
         td {
-            background-color: #98FB98; /* 浅绿色单元格 */
-            border: 1px solid #000000; /* 单元格边框保持黑色 */
+            background-color: #98FB98;
+            border: 1px solid #000000;
             padding: 8px;
             text-align: left;
         }
@@ -41,14 +41,17 @@
             color: #666; 
         }
         td.highlight {
-            background-color: #90EE90; /* 高亮浅绿色 */
+            background-color: #90EE90;
         }
     </style>
 </head>
 <body>
     <div class="header">
         日期: {{ date }}<br>
-        实时温度: {{ latest_temp }}°C
+        时间: {{ time }}<br>
+        实时温度: {{ latest_temp }}°C<br>
+        天气状态: {{ weather_status }}<br>
+        风力: {{ wind_level }} {{ wind_direction }}
     </div>
     <h2 style="text-align: center;">Data from dat_heatsourceoutletdata (热源出口数据)</h2>
     <table>
