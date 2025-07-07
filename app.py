@@ -19,7 +19,7 @@ def show_data():
         )
         cursor = conn.cursor()
         # 查询数据
-        cursor.execute("SELECT * FROM dat_heatsourceoutletdata WHERE GetTime > '2025-06-01 00:00:00' ORDER BY GetTime DESC LIMIT 1000")
+        cursor.execute("SELECT * FROM dat_heatsourceoutletdata WHERE GetTime > '2025-07-01 00:00:00' ORDER BY GetTime DESC LIMIT 1000")
         data = cursor.fetchall()
 
         # 获取实时日期
