@@ -27,18 +27,17 @@ def show_data():
         date_str = beijing_time.split()[0]
         time_str = beijing_time.split()[1]
 
-        latitude = 40.8463
-        longitude = 111.7330
-        api_key = "ff631380a35a418ca30101758250707"  # 你的 WeatherAPI Key
+        latitude = 40.811
+        longitude = 111.652
+        api_key = "ff631380a35a418ca30101758250707"
         url = f"http://api.weatherapi.com/v1/current.json?key={api_key}&q={latitude},{longitude}&aqi=no"
         try:
             response = requests.get(url, timeout=5)
             weather_data = response.json()
-            print("WeatherAPI Response:", weather_data)  # 调试输出
+            print("WeatherAPI Response:", weather_data)
             latest_temp = weather_data['current']['temp_c']
             weather_code = weather_data['current']['condition']['code']
 
-            # 解析天气状态 (基于 WeatherAPI condition code)
             weather_status = "晴天"
             if weather_code in [1063, 1150, 1153]:  # 毛毛雨
                 weather_status = "毛毛雨"
@@ -50,16 +49,18 @@ def show_data():
                 weather_status = "大雨"
             elif weather_code in [1198, 1201]:  # 暴雨
                 weather_status = "暴雨"
-            elif weather_code in [1006, 1030]:  # 阴天
+            elif weather_code in [1006, 1030, 1003]:  # 阴天或多云
                 weather_status = "阴"
+            elif weather_code == 1000:  # 晴天
+                weather_status = "晴天"
 
-            windspeed = weather_data['current']['wind_kph'] / 3.6  # 转换为 m/s
+            windspeed = weather_data['current']['wind_kph'] / 3.6
             winddirection = weather_data['current']['wind_degree']
 
             wind_level = "无风"
-            if windspeed >= 0.3 and windspeed <= 1.5:
+            if windspeed >= 0.3 and windspeed < 1.6:  # 1 级
                 wind_level = "1级 微风"
-            elif windspeed <= 3.3:
+            elif windspeed <= 3.3:  # 2 级
                 wind_level = "2级 轻风"
             elif windspeed <= 5.4:
                 wind_level = "3级 微风"
