@@ -29,38 +29,34 @@ def show_data():
 
         latitude = 40.8463
         longitude = 111.7330
-        url = f"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&current_weather=true&hourly=weathercode,temperature_2m,windspeed_10m,winddirection_10m"
+        api_key = "ff631380a35a418ca30101758250707"  # 你的 WeatherAPI Key
+        url = f"http://api.weatherapi.com/v1/current.json?key={api_key}&q={latitude},{longitude}&aqi=no"
         try:
             response = requests.get(url, timeout=5)
             weather_data = response.json()
-            print("API Response:", weather_data)  # 调试输出
-            current_weather = weather_data['current_weather']
-            latest_temp = current_weather['temperature']
-            weather_code = current_weather['weathercode']
+            print("WeatherAPI Response:", weather_data)  # 调试输出
+            latest_temp = weather_data['current']['temp_c']
+            weather_code = weather_data['current']['condition']['code']
 
-            hourly_data = weather_data.get('hourly', {})
-            if hourly_data:
-                windspeed = hourly_data.get('windspeed_10m', [0])[-1]
-                winddirection = hourly_data.get('winddirection_10m', [0])[-1]
-            else:
-                windspeed = 0
-                winddirection = 0
-
+            # 解析天气状态 (基于 WeatherAPI condition code)
             weather_status = "晴天"
-            wind_level = "无风"
-            if weather_code in [51, 53]:  # 毛毛雨
+            if weather_code in [1063, 1150, 1153]:  # 毛毛雨
                 weather_status = "毛毛雨"
-            elif weather_code in [55, 61]:  # 小雨
+            elif weather_code in [1183, 1186, 1198]:  # 小雨
                 weather_status = "小雨"
-            elif weather_code in [63, 80]:  # 中雨
+            elif weather_code in [1189, 1192, 1240]:  # 中雨
                 weather_status = "中雨"
-            elif weather_code in [65, 81]:  # 大雨
+            elif weather_code in [1195, 1243]:  # 大雨
                 weather_status = "大雨"
-            elif weather_code in [67, 82]:  # 暴雨
+            elif weather_code in [1198, 1201]:  # 暴雨
                 weather_status = "暴雨"
-            elif weather_code in [3, 45, 48]:  # 阴天
+            elif weather_code in [1006, 1030]:  # 阴天
                 weather_status = "阴"
 
+            windspeed = weather_data['current']['wind_kph'] / 3.6  # 转换为 m/s
+            winddirection = weather_data['current']['wind_degree']
+
+            wind_level = "无风"
             if windspeed >= 0.3 and windspeed <= 1.5:
                 wind_level = "1级 微风"
             elif windspeed <= 3.3:
