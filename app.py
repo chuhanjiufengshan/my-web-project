@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import mysql.connector
 from datetime import datetime
 import requests
@@ -115,5 +115,24 @@ def show_data():
     except Exception as e:
         return f"Error: {str(e)}"
 
+@app.route('/data', methods=['POST'])
+def receive_data():
+    try:
+        data = request.data.decode('utf-8')
+        conn = mysql.connector.connect(
+            host="36.134.92.118",
+            port=13326,
+            user="hs_hc_xhgr",
+            password="L#xhgr@2025",
+            database="hs_hc_rl_xhgr"
+        )
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO dat_heatsourceoutletdata (GetTime, SupplyTemp) VALUES (NOW(), %s)", (data.replace('TEMP:', ''),))
+        conn.commit()
+        conn.close()
+        return "Data received", 200
+    except Exception as e:
+        return f"Error: {str(e)}", 500
+
 if __name__ == '__main__':
-    app.run(debug=True, port=int(os.environ.get('PORT', 5001)), host='0.0.0.0')
+    app.run(debug=True, port=int(os.environ.get('PORT', 10000)), host='0.0.0.0')
