@@ -22,7 +22,6 @@ def show_data():
         cursor.execute("SELECT * FROM dat_heatsourceoutletdata WHERE GetTime >= %s ORDER BY GetTime DESC LIMIT 1000", (start_date,))
         data = cursor.fetchall()
 
-        # 获取最新就地实时温度
         cursor.execute("SELECT SupplyTemp FROM dat_heatsourceoutletdata ORDER BY GetTime DESC LIMIT 1")
         latest_local_temp = cursor.fetchone()
         latest_local_temp = latest_local_temp[0] if latest_local_temp else 0.0
@@ -39,33 +38,32 @@ def show_data():
         try:
             response = requests.get(url, timeout=5)
             weather_data = response.json()
-            print("WeatherAPI Response:", weather_data)
             weather_temp = weather_data['current']['temp_c']
             weather_code = weather_data['current']['condition']['code']
 
             weather_status = "晴天"
-            if weather_code in [1063, 1150, 1153]:  # 毛毛雨
+            if weather_code in [1063, 1150, 1153]:
                 weather_status = "毛毛雨"
-            elif weather_code in [1183, 1186, 1198]:  # 小雨
+            elif weather_code in [1183, 1186, 1198]:
                 weather_status = "小雨"
-            elif weather_code in [1189, 1192, 1240]:  # 中雨
+            elif weather_code in [1189, 1192, 1240]:
                 weather_status = "中雨"
-            elif weather_code in [1195, 1243]:  # 大雨
+            elif weather_code in [1195, 1243]:
                 weather_status = "大雨"
-            elif weather_code in [1198, 1201]:  # 暴雨
+            elif weather_code in [1198, 1201]:
                 weather_status = "暴雨"
-            elif weather_code in [1006, 1030, 1003]:  # 阴天或多云
+            elif weather_code in [1006, 1030, 1003]:
                 weather_status = "阴"
-            elif weather_code == 1000:  # 晴天
+            elif weather_code == 1000:
                 weather_status = "晴天"
 
             windspeed = weather_data['current']['wind_kph'] / 3.6
             winddirection = weather_data['current']['wind_degree']
 
             wind_level = "无风"
-            if windspeed >= 0.3 and windspeed < 1.6:  # 1 级
+            if windspeed >= 0.3 and windspeed < 1.6:
                 wind_level = "1级 微风"
-            elif windspeed <= 3.3:  # 2 级
+            elif windspeed <= 3.3:
                 wind_level = "2级 轻风"
             elif windspeed <= 5.4:
                 wind_level = "3级 微风"
@@ -142,3 +140,4 @@ def show_data():
 
     if __name__ == '__main__':
         app.run(debug=True, port=int(os.environ.get('PORT', 10000)), host='0.0.0.0')
+        input("按任意键退出...")  # 保持窗口
