@@ -19,6 +19,9 @@
         .header {
             text-align: right;
             padding: 10px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
         }
     </style>
 </head>
@@ -27,7 +30,7 @@
         日期: {{ date }}<br>
         时间: {{ time }}<br>
         天气温度: {{ weather_temp }}°C<br>
-        就地实时温度: {{ latest_local_temp }}°C  <!-- 添加新字段 -->
+        就地实时温度: {{ latest_local_temp }}°C  <!-- 确认此行存在 -->
     </div>
     <table>
         <tr>

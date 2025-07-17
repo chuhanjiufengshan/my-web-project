@@ -40,7 +40,7 @@ def show_data():
             response = requests.get(url, timeout=5)
             weather_data = response.json()
             print("WeatherAPI Response:", weather_data)
-            weather_temp = weather_data['current']['temp_c']  # 天气温度
+            weather_temp = weather_data['current']['temp_c']
             weather_code = weather_data['current']['condition']['code']
 
             weather_status = "晴天"
@@ -115,30 +115,30 @@ def show_data():
 
         conn.close()
         return render_template('index.html', data=data, date=date_str, time=time_str, 
-                              latest_local_temp=latest_local_temp,  # 就地实时温度
-                              weather_temp=weather_temp,  # 天气温度
-                              weather_status=weather_status, 
-                              wind_level=wind_level, 
-                              wind_direction=wind_direction)
+                            latest_local_temp=latest_local_temp, 
+                            weather_temp=weather_temp, 
+                            weather_status=weather_status, 
+                            wind_level=wind_level, 
+                            wind_direction=wind_direction)
 
-@app.route('/data', methods=['POST'])
-def receive_data():
-    try:
-        data = request.data.decode('utf-8')
-        conn = mysql.connector.connect(
-            host="36.134.92.118",
-            port=13326,
-            user="hs_hc_xhgr",
-            password="L#xhgr@2025",
-            database="hs_hc_rl_xhgr"
-        )
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO dat_heatsourceoutletdata (GetTime, SupplyTemp) VALUES (NOW(), %s)", (data.replace('TEMP:', ''),))
-        conn.commit()
-        conn.close()
-        return "Data received", 200
-    except Exception as e:
-        return f"Error: {str(e)}", 500
+    @app.route('/data', methods=['POST'])
+    def receive_data():
+        try:
+            data = request.data.decode('utf-8')
+            conn = mysql.connector.connect(
+                host="36.134.92.118",
+                port=13326,
+                user="hs_hc_xhgr",
+                password="L#xhgr@2025",
+                database="hs_hc_rl_xhgr"
+            )
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO dat_heatsourceoutletdata (GetTime, SupplyTemp) VALUES (NOW(), %s)", (data.replace('TEMP:', ''),))
+            conn.commit()
+            conn.close()
+            return "Data received", 200
+        except Exception as e:
+            return f"Error: {str(e)}", 500
 
-if __name__ == '__main__':
-    app.run(debug=True, port=int(os.environ.get('PORT', 10000)), host='0.0.0.0')
+    if __name__ == '__main__':
+        app.run(debug=True, port=int(os.environ.get('PORT', 10000)), host='0.0.0.0')
