@@ -118,26 +118,29 @@ def show_data():
                             weather_status=weather_status, 
                             wind_level=wind_level, 
                             wind_direction=wind_direction)
+    except Exception as e:
+        print(f"Database error: {e}")
+        return "Error loading data", 500
 
-    @app.route('/data', methods=['POST'])
-    def receive_data():
-        try:
-            data = request.data.decode('utf-8')
-            conn = mysql.connector.connect(
-                host="36.134.92.118",
-                port=13326,
-                user="hs_hc_xhgr",
-                password="L#xhgr@2025",
-                database="hs_hc_rl_xhgr"
-            )
-            cursor = conn.cursor()
-            cursor.execute("INSERT INTO dat_heatsourceoutletdata (GetTime, SupplyTemp) VALUES (NOW(), %s)", (data.replace('TEMP:', ''),))
-            conn.commit()
-            conn.close()
-            return "Data received", 200
-        except Exception as e:
-            return f"Error: {str(e)}", 500
+@app.route('/data', methods=['POST'])
+def receive_data():
+    try:
+        data = request.data.decode('utf-8')
+        conn = mysql.connector.connect(
+            host="36.134.92.118",
+            port=13326,
+            user="hs_hc_xhgr",
+            password="L#xhgr@2025",
+            database="hs_hc_rl_xhgr"
+        )
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO dat_heatsourceoutletdata (GetTime, SupplyTemp) VALUES (NOW(), %s)", (data.replace('TEMP:', ''),))
+        conn.commit()
+        conn.close()
+        return "Data received", 200
+    except Exception as e:
+        return f"Error: {str(e)}", 500
 
-    if __name__ == '__main__':
-        app.run(debug=True, port=int(os.environ.get('PORT', 10000)), host='0.0.0.0')
-        input("按任意键退出...")
+if __name__ == '__main__':
+    app.run(debug=True, port=int(os.environ.get('PORT', 10000)), host='0.0.0.0')
+    input("按任意键退出...")
