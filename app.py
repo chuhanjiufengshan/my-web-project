@@ -22,6 +22,11 @@ def show_data():
         cursor.execute("SELECT * FROM dat_heatsourceoutletdata WHERE GetTime >= %s ORDER BY GetTime DESC LIMIT 1000", (start_date,))
         data = cursor.fetchall()
 
+        # 获取最新就地实时温度
+        cursor.execute("SELECT SupplyTemp FROM dat_heatsourceoutletdata ORDER BY GetTime DESC LIMIT 1")
+        latest_local_temp = cursor.fetchone()
+        latest_local_temp = latest_local_temp[0] if latest_local_temp else 0.0
+
         beijing_tz = pytz.timezone('Asia/Shanghai')
         beijing_time = datetime.now(beijing_tz).strftime('%Y-%m-%d %H:%M')
         date_str = beijing_time.split()[0]
@@ -35,7 +40,7 @@ def show_data():
             response = requests.get(url, timeout=5)
             weather_data = response.json()
             print("WeatherAPI Response:", weather_data)
-            latest_temp = weather_data['current']['temp_c']
+            weather_temp = weather_data['current']['temp_c']  # 天气温度
             weather_code = weather_data['current']['condition']['code']
 
             weather_status = "晴天"
@@ -103,17 +108,18 @@ def show_data():
 
         except (requests.RequestException, KeyError, ValueError) as e:
             print("Weather API Error:", e)
-            cursor.execute("SELECT SupplyTemp FROM dat_heatsourceoutletdata ORDER BY GetTime DESC LIMIT 1")
-            temp = cursor.fetchone()
-            latest_temp = temp[0] if temp else 0
+            weather_temp = 0.0
             weather_status = "未知"
             wind_level = "未知"
             wind_direction = ""
 
         conn.close()
-        return render_template('index.html', data=data, date=date_str, time=time_str, latest_temp=latest_temp, weather_status=weather_status, wind_level=wind_level, wind_direction=wind_direction)
-    except Exception as e:
-        return f"Error: {str(e)}"
+        return render_template('index.html', data=data, date=date_str, time=time_str, 
+                              latest_local_temp=latest_local_temp,  # 就地实时温度
+                              weather_temp=weather_temp,  # 天气温度
+                              weather_status=weather_status, 
+                              wind_level=wind_level, 
+                              wind_direction=wind_direction)
 
 @app.route('/data', methods=['POST'])
 def receive_data():
