@@ -1,12 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>温度数据</title>
+    <title>热源出口数据</title>
     <style>
+        body {
+            background-color: #0078D7; /* Windows 10 蓝色 */
+            color: #ffffff; /* 文字白色 */
+            font-family: Arial, sans-serif;
+        }
         table {
             width: 80%;
             margin: 20px auto;
             border-collapse: collapse;
+            background-color: #ffffff; /* 表格背景白色 */
+            color: #000000; /* 表格文字黑色 */
         }
         th, td {
             border: 1px solid #ddd;
@@ -15,6 +22,10 @@
         }
         th {
             background-color: #f2f2f2;
+        }
+        .cn-note {
+            font-size: 0.8em;
+            color: #666;
         }
         .header {
             text-align: right;
@@ -30,17 +41,34 @@
         日期: {{ date }}<br>
         时间: {{ time }}<br>
         天气温度: {{ weather_temp }}°C<br>
-        就地实时温度: {{ latest_local_temp }}°C  <!-- 确认此行存在 -->
+        就地实时温度: {{ latest_local_temp }}°C<br>
+        累计流量: {{ latest_cumulative_flow }} m³<br>
+        瞬时流量: {{ latest_instantaneous_flow }} m³/h
     </div>
+    <h2>Data from dat_heatsourceoutletdata (热源出口数据)</h2>
     <table>
         <tr>
-            <th>时间</th>
-            <th>温度 (°C)</th>
+            <th>HeatSourceExportId <span class="cn-note">(热源出口ID)</span></th>
+            <th>GetTime <span class="cn-note">(获取时间)</span></th>
+            <th>CumulativeFlow <span class="cn-note">(累计流量 m³)</span></th>
+            <th>InstantaneousFlow <span class="cn-note">(瞬时流量 m³/h)</span></th>
+            <th>CumulativeHeat <span class="cn-note">(累计热量)</span></th>
+            <th>InstantaneousHeat <span class="cn-note">(瞬时热量)</span></th>
+            <th>SupplyTemp <span class="cn-note">(供温 °C)</span></th>
+            <th>BackTemp <span class="cn-note">(回温 °C)</span></th>
+            <th>SupplyPre <span class="cn-note">(供水压力)</span></th>
         </tr>
         {% for row in data %}
         <tr>
-            <td>{{ row[1] }}</td>  <!-- GetTime -->
-            <td>{{ row[2] }}</td>  <!-- SupplyTemp -->
+            <td>{{ row[0] }}</td>
+            <td>{{ row[1] }}</td>
+            <td>{{ row[2] }}</td>
+            <td>{{ row[3] }}</td>
+            <td>{{ row[4] }}</td>
+            <td>{{ row[5] }}</td>
+            <td>{{ row[6] }}</td>
+            <td>{{ row[7] }}</td>
+            <td>{{ row[8] }}</td>
         </tr>
         {% endfor %}
     </table>
