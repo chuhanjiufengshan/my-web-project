@@ -1,62 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>热源出口数据</title>
+    <meta charset="UTF-8">
+    <title>供热数据监测</title>
     <style>
         body {
-            background-color: #0078D7; /* Windows 10 蓝色 */
-            color: #ffffff; /* 文字白色 */
+            background-color: #5D9BE0;
             font-family: Arial, sans-serif;
+            color: black;
+            margin: 20px;
         }
         table {
-            width: 80%;
+            width: 90%;
             margin: 20px auto;
             border-collapse: collapse;
-            background-color: #ffffff; /* 表格背景白色 */
-            color: #000000; /* 表格文字黑色 */
+            background-color: #90EE90;
         }
         th, td {
-            border: 1px solid #ddd;
+            border: 1px solid black;
             padding: 8px;
-            text-align: left;
+            text-align: center;
         }
         th {
-            background-color: #f2f2f2;
+            background-color: #4CAF50;
+            color: black;
         }
-        .cn-note {
-            font-size: 0.8em;
-            color: #666;
-        }
-        .header {
+        .weather-info {
             text-align: right;
-            padding: 10px;
-            position: absolute;
-            top: 10px;
-            right: 10px;
+            margin-right: 20px;
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        日期: {{ date }}<br>
-        时间: {{ time }}<br>
-        天气温度: {{ weather_temp }}°C<br>
-        就地实时温度: {{ latest_local_temp }}°C<br>
-        累计流量: {{ latest_cumulative_flow }} m³<br>
-        瞬时流量: {{ latest_instantaneous_flow }} m³/h
+    <div class="weather-info">
+        <p>日期: {{ date }}</p>
+        <p>时间: {{ time }}</p>
+        <p>室外温度: {{ weather_temp }}°C</p>
+        <p>天气状况: {{ weather_status }}</p>
+        <p>风力: {{ wind_level }}</p>
+        <p>风向: {{ wind_direction }}</p>
     </div>
-    <h2>Data from dat_heatsourceoutletdata (热源出口数据)</h2>
     <table>
         <tr>
-            <th>HeatSourceExportId <span class="cn-note">(热源出口ID)</span></th>
-            <th>GetTime <span class="cn-note">(获取时间)</span></th>
-            <th>CumulativeFlow <span class="cn-note">(累计流量 m³)</span></th>
-            <th>InstantaneousFlow <span class="cn-note">(瞬时流量 m³/h)</span></th>
-            <th>CumulativeHeat <span class="cn-note">(累计热量)</span></th>
-            <th>InstantaneousHeat <span class="cn-note">(瞬时热量)</span></th>
-            <th>SupplyTemp <span class="cn-note">(供温 °C)</span></th>
-            <th>BackTemp <span class="cn-note">(回温 °C)</span></th>
-            <th>SupplyPre <span class="cn-note">(供水压力)</span></th>
+            <th>热源出口ID</th>
+            <th>采集时间</th>
+            <th>累计流量(t)</th>
+            <th>瞬时流量(t/h)</th>
+            <th>累计热量(GJ)</th>
+            <th>瞬时热量(GJ/h)</th>
+            <th>供水温度(°C)</th>
+            <th>回水温度(°C)</th>
+            <th>供水压力(MPa)</th>
         </tr>
         {% for row in data %}
         <tr>
@@ -72,8 +67,5 @@
         </tr>
         {% endfor %}
     </table>
-    <p>天气状态: {{ weather_status }}</p>
-    <p>风力等级: {{ wind_level }}</p>
-    <p>风向: {{ wind_direction }}</p>
 </body>
 </html>

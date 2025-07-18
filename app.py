@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request
 import mysql.connector
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 import pytz
 import os
@@ -10,7 +10,7 @@ app = Flask(__name__)
 @app.route('/')
 def show_data():
     try:
-        # 数据库连接
+        print("尝试连接数据库...")
         conn = mysql.connector.connect(
             host="36.134.92.118",
             port=13326,
@@ -18,27 +18,20 @@ def show_data():
             password="L#xhgr@2025",
             database="hs_hc_rl_xhgr"
         )
+        print("数据库连接成功")
         cursor = conn.cursor()
 
-        # 查询所有字段，获取最新 1000 条数据
+        # 查询最近 10 天数据
+        ten_days_ago = datetime.now(pytz.timezone('Asia/Shanghai')) - timedelta(days=10)
         cursor.execute("""
             SELECT HeatSourceExportId, GetTime, CumulativeFlow, InstantaneousFlow, 
                    CumulativeHeat, InstantaneousHeat, SupplyTemp, BackTemp, SupplyPre 
             FROM dat_heatsourceoutletdata 
-            ORDER BY GetTime DESC LIMIT 1000
-        """)
+            WHERE GetTime >= %s 
+            ORDER BY GetTime DESC
+        """, (ten_days_ago,))
         data = cursor.fetchall()
-
-        # 获取最新一条记录的 SupplyTemp, CumulativeFlow, InstantaneousFlow
-        cursor.execute("""
-            SELECT SupplyTemp, CumulativeFlow, InstantaneousFlow 
-            FROM dat_heatsourceoutletdata 
-            ORDER BY GetTime DESC LIMIT 1
-        """)
-        latest = cursor.fetchone()
-        latest_local_temp = latest[0] if latest else 0.0
-        latest_cumulative_flow = latest[1] if latest and len(latest) > 1 else 0.0
-        latest_instantaneous_flow = latest[2] if latest and len(latest) > 2 else 0.0
+        print(f"查询到 {len(data)} 条记录")
 
         # 获取北京时间
         beijing_tz = pytz.timezone('Asia/Shanghai')
@@ -56,21 +49,27 @@ def show_data():
             weather_data = response.json()
             weather_temp = weather_data['current']['temp_c']
             weather_code = weather_data['current']['condition']['code']
-            weather_status = "晴天"
+            weather_status = "晴"
             if weather_code in [1063, 1150, 1153]:
-                weather_status = "毛毛雨"
-            elif weather_code in [1183, 1186, 1198]:
                 weather_status = "小雨"
-            elif weather_code in [1189, 1192, 1240]:
+            elif weather_code in [1183, 1186, 1198]:
                 weather_status = "中雨"
-            elif weather_code in [1195, 1243]:
+            elif weather_code in [1189, 1192, 1240]:
                 weather_status = "大雨"
-            elif weather_code in [1198, 1201]:
+            elif weather_code in [1195, 1243]:
                 weather_status = "暴雨"
-            elif weather_code in [1006, 1030, 1003]:
+            elif weather_code in [1066, 1114, 1210, 1213]:
+                weather_status = "小雪"
+            elif weather_code in [1216, 1219]:
+                weather_status = "中雪"
+            elif weather_code in [1222, 1225]:
+                weather_status = "大雪"
+            elif weather_code in [1006, 1009]:
                 weather_status = "阴"
             elif weather_code == 1000:
-                weather_status = "晴天"
+                weather_status = "晴"
+            elif weather_code in [1072, 1168, 1171]:
+                weather_status = "冻雨"
             windspeed = weather_data['current']['wind_kph'] / 3.6
             winddirection = weather_data['current']['wind_degree']
             wind_level = "无风"
@@ -98,7 +97,7 @@ def show_data():
                 wind_level = "11级 暴风"
             else:
                 wind_level = "12级 飓风"
-            wind_direction = ""
+            wind_direction = "无风向"
             if 0 <= winddirection < 22.5 or 337.5 <= winddirection <= 360:
                 wind_direction = "北风"
             elif 22.5 <= winddirection < 67.5:
@@ -115,37 +114,36 @@ def show_data():
                 wind_direction = "西风"
             elif 292.5 <= winddirection < 337.5:
                 wind_direction = "西北风"
+            print(f"天气数据: 温度={weather_temp}°C, 状况={weather_status}")
         except (requests.RequestException, KeyError, ValueError) as e:
             print(f"Weather API Error: {e}")
             weather_temp = 0.0
             weather_status = "未知"
             wind_level = "未知"
-            wind_direction = ""
+            wind_direction = "未知"
 
         conn.close()
 
-        # 渲染模板
         return render_template('index.html', data=data, date=date_str, time=time_str,
-                              latest_local_temp=latest_local_temp,
-                              latest_cumulative_flow=latest_cumulative_flow,
-                              latest_instantaneous_flow=latest_instantaneous_flow,
                               weather_temp=weather_temp, weather_status=weather_status,
                               wind_level=wind_level, wind_direction=wind_direction)
 
     except Exception as e:
-        print(f"Database error: {e}")
+        print(f"Database error: {str(e)}")
         return f"Error loading data: {str(e)}", 500
 
 @app.route('/data', methods=['POST'])
 def receive_data():
     try:
         data = request.data.decode('utf-8')
-        # 假设 NodeMCU 发送格式为 "TEMP:xx.xx,FLOW_CUM:yy.yy,FLOW_INST:zz.zz"
-        parts = data.split(',')
-        temp = parts[0].replace('TEMP:', '') if parts else '0.0'
-        flow_cum = parts[1].replace('FLOW_CUM:', '') if len(parts) > 1 else '0.0'
-        flow_inst = parts[2].replace('FLOW_INST:', '') if len(parts) > 2 else '0.0'
-
+        print(f"收到数据: {data}")
+        temp = data.replace('TEMP:', '') if 'TEMP:' in data else '0.0'
+        print(f"解析温度: {temp}")
+        try:
+            temp_float = float(temp)
+        except ValueError:
+            print(f"温度解析错误: {temp} 不是有效数字")
+            return f"Error: Invalid temperature format {temp}", 400
         conn = mysql.connector.connect(
             host="36.134.92.118",
             port=13326,
@@ -154,16 +152,15 @@ def receive_data():
             database="hs_hc_rl_xhgr"
         )
         cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO dat_heatsourceoutletdata 
-            (GetTime, SupplyTemp, CumulativeFlow, InstantaneousFlow) 
-            VALUES (NOW(), %s, %s, %s)
-        """, (temp, flow_cum, flow_inst))
+        cursor.execute("INSERT INTO dat_heatsourceoutletdata (GetTime, SupplyTemp) VALUES (NOW(), %s)", (temp_float,))
         conn.commit()
+        print("数据插入成功")
         conn.close()
         return "Data received", 200
     except Exception as e:
+        print(f"数据插入错误: {str(e)}")
         return f"Error: {str(e)}", 500
 
 if __name__ == '__main__':
+    print("启动 Flask 应用...")
     app.run(debug=True, port=10000, host='0.0.0.0')
