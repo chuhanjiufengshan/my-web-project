@@ -4,6 +4,7 @@ from datetime import datetime
 import requests
 import pytz
 import logging
+import os
 
 app = Flask(__name__)
 
@@ -13,25 +14,8 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(me
 @app.route('/')
 def show_data():
     try:
-        logging.debug("尝试连接本地数据库...")
-        # 本地数据库查询
-        conn_local = mysql.connector.connect(
-            host="localhost",
-            port=3306,
-            user="root",
-            password="root123",
-            database="my_heat_data"
-        )
-        cursor_local = conn_local.cursor()
-        cursor_local.execute("SELECT SupplyTemp FROM dat_heatsourceoutletdata ORDER BY GetTime DESC LIMIT 1")
-        result = cursor_local.fetchone()
-        latest_local_temp = result[0] if result and result[0] is not None else 0.0
-        logging.debug(f"本地数据库查询结果: {result}")
-        logging.info(f"最新就地温度: {latest_local_temp}°C")
-        conn_local.close()
-
-        # 远程数据库查询
         logging.debug("尝试连接远程数据库...")
+        # 使用远程数据库替代本地数据库
         conn_remote = mysql.connector.connect(
             host="36.134.92.118",
             port=13326,
@@ -40,6 +24,13 @@ def show_data():
             database="hs_hc_rl_xhgr"
         )
         cursor_remote = conn_remote.cursor()
+        cursor_remote.execute("SELECT SupplyTemp FROM dat_heatsourceoutletdata ORDER BY GetTime DESC LIMIT 1")
+        result = cursor_remote.fetchone()
+        latest_local_temp = float(result[0]) if result and result[0] is not None else 0.0
+        logging.debug(f"远程数据库查询结果: {result}")
+        logging.info(f"最新就地温度: {latest_local_temp}°C")
+
+        # 远程数据库查询（保持原逻辑）
         cursor_remote.execute("""
             SELECT 
                 HeatSourceExportId,  -- 热源出口 ID
@@ -67,7 +58,7 @@ def show_data():
 
         # 天气数据
         latitude, longitude = 40.811, 111.652
-        api_key = "ff631380a35a418ca30101758250707"
+        api_key = os.environ.get('WEATHER_API_KEY', 'ff631380a35a418ca30101758250707')
         url = f"http://api.weatherapi.com/v1/current.json?key={api_key}&q={latitude},{longitude}&aqi=no"
         try:
             response = requests.get(url, timeout=5)
@@ -132,11 +123,11 @@ def receive_data():
             logging.warning("警告: 温度值为 0.0，可能未正确接收数据")
             return "Invalid temperature", 400
         conn = mysql.connector.connect(
-            host="localhost",
-            port=3306,
-            user="root",
-            password="root123",
-            database="my_heat_data"
+            host="36.134.92.118",
+            port=13326,
+            user="hs_hc_xhgr",
+            password="L#xhgr@2025",
+            database="hs_hc_rl_xhgr"
         )
         cursor = conn.cursor()
         cursor.execute("INSERT INTO dat_heatsourceoutletdata (GetTime, SupplyTemp) VALUES (NOW(), %s)", (temp_float,))
@@ -153,4 +144,4 @@ def receive_data():
 
 if __name__ == '__main__':
     logging.info("启动 Flask 应用...")
-    app.run(debug=True, port=10000, host='0.0.0.0')
+    app.run(debug=True, port=int(os.environ.get('PORT', 10000)), host='0.0.0.0')
